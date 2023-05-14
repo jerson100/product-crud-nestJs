@@ -1,6 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
+import { PutProductDto, CreateProductDto, PatchProductDto } from './dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Product } from './schemas/product.schema';
 import { Model } from 'mongoose';
@@ -40,7 +39,7 @@ export class ProductsService {
 
   async update(
     id: string,
-    updateProductDto: UpdateProductDto,
+    updateProductDto: PatchProductDto | PutProductDto,
   ): Promise<Product> {
     const existsProduct = await this.productModel.findOne({ _id: id });
     if (!existsProduct)

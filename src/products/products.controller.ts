@@ -13,7 +13,8 @@ import {
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
+import { PatchProductDto } from './dto/patch-product.dto';
+import { PutProductDto } from './dto/put-product.dto';
 // import { Response } from 'express';
 
 @Controller('products')
@@ -41,7 +42,16 @@ export class ProductsController {
 
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
+  update(@Param('id') id: string, @Body() updateProductDto: PatchProductDto) {
+    return this.productsService.update(id, updateProductDto);
+  }
+
+  @Put(':id')
+  @HttpCode(HttpStatus.OK)
+  patchProduct(
+    @Param('id') id: string,
+    @Body() updateProductDto: PutProductDto,
+  ) {
     return this.productsService.update(id, updateProductDto);
   }
 
