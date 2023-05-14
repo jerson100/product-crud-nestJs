@@ -16,7 +16,8 @@ Crud de productos usando [NestJs](https://github.com/nestjs/nest) como framework
 
 ## Autor
 
-<div style="display: flex; flex-direction:column; align-items:center; gap: 16px">
+<div align="center">
     <img src="https://jersonramirez.studio/assets/jerson-a11110e1.png" width="200" alt="Jerson Ramírez Ortiz"/>
-    <div style="display: flex;flex-direction:column;align-items:center"><p>Jerson Ramírez</p><p><a href="https://jersonramirez.studio">Mi portafolio</a></p></div>
+    <p>Jerson Ramírez</p>
+    <p><a href="https://jersonramirez.studio" target="blank">Mi portafolio</a></p>
 </div>
