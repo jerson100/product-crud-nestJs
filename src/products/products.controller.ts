@@ -11,10 +11,9 @@ import {
   HttpStatus,
   Put,
 } from '@nestjs/common';
+import { CreateProductDto, PatchProductDto, PutProductDto } from './dto';
 import { ProductsService } from './products.service';
-import { CreateProductDto } from './dto/create-product.dto';
-import { PatchProductDto } from './dto/patch-product.dto';
-import { PutProductDto } from './dto/put-product.dto';
+import { ValidateMongoIdPipe } from 'src/pipes';
 // import { Response } from 'express';
 
 @Controller('products')
@@ -36,20 +35,26 @@ export class ProductsController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  findOne(@Param('id') id: string) {
-    return this.productsService.findOne(id);
+  findOne(
+    @Param('id', ValidateMongoIdPipe)
+    id: String,
+  ) {
+    return this.productsService.findOne(id.toString());
   }
 
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
-  update(@Param('id') id: string, @Body() updateProductDto: PatchProductDto) {
+  update(
+    @Param('id', ValidateMongoIdPipe) id: string,
+    @Body() updateProductDto: PatchProductDto,
+  ) {
     return this.productsService.update(id, updateProductDto);
   }
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
   patchProduct(
-    @Param('id') id: string,
+    @Param('id', ValidateMongoIdPipe) id: string,
     @Body() updateProductDto: PutProductDto,
   ) {
     return this.productsService.update(id, updateProductDto);
@@ -57,7 +62,7 @@ export class ProductsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ValidateMongoIdPipe) id: string) {
     return this.productsService.remove(id);
   }
 }

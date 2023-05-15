@@ -1,10 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateUserDto, PatchUserDto, PutUserDto } from './dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './schemas/user.schema';
-import { PatchUserDto } from './dto/patch-user.dto';
 import { hashPassword } from 'src/utils/bycript.util';
 import { UserStatus } from './user.consts';
 
@@ -46,46 +44,36 @@ export class UsersService {
     return user;
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+  async update(
+    id: string,
+    updateUserDto: PutUserDto | PatchUserDto,
+  ): Promise<User> {
     const existsUser = await this.userModel.findOne({
       _id: id,
       status: {
         $ne: UserStatus.DELETED,
       },
     });
-    if (!existsUser)
+    if (!existsUser) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    const emailUser = await this.userModel.findOne({
-      email: updateUserDto.email,
-      status: {
-        $ne: UserStatus.DELETED,
-      },
-    });
-    if (emailUser)
-      throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
-    const updatedUser = await this.userModel.findByIdAndUpdate(
-      { _id: id },
-      { $set: updateUserDto },
-      { new: true },
-    );
-    return updatedUser;
-  }
-
-  async patch(id: string, updateUserDto: PatchUserDto): Promise<User> {
-    const existsUser = await this.userModel.findOne({
-      _id: id,
-      status: UserStatus.ACTIVE,
-    });
-    if (!existsUser)
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    const emailUser = await this.userModel.findOne({
-      email: updateUserDto.email,
-      status: {
-        $ne: UserStatus.DELETED,
-      },
-    });
-    if (emailUser)
-      throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
+    }
+    if (updateUserDto.email) {
+      const emailUser = await this.userModel.findOne({
+        email: updateUserDto.email,
+        status: {
+          $ne: UserStatus.DELETED,
+        },
+      });
+      if (emailUser) {
+        throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
+      }
+    }
+    if (updateUserDto.password) {
+      updateUserDto = {
+        ...updateUserDto,
+        password: await hashPassword(updateUserDto.password),
+      };
+    }
     const updatedUser = await this.userModel.findByIdAndUpdate(
       { _id: id },
       { $set: updateUserDto },
@@ -100,11 +88,7 @@ export class UsersService {
         _id: id,
         status: UserStatus.ACTIVE,
       },
-      {
-        $set: {
-          status: UserStatus.DELETED,
-        },
-      },
+      { $set: { status: UserStatus.DELETED } },
     );
     if (!deletedUser)
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);

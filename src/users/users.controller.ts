@@ -12,12 +12,12 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateUserDto, PatchUserDto, PutUserDto } from './dto';
 import {
   RemovePasswordInterceptor,
   RemoveStatusInterceptor,
 } from 'src/interceptors';
+import { ValidateMongoIdPipe } from 'src/pipes';
 
 @Controller('users')
 export class UsersController {
@@ -38,26 +38,32 @@ export class UsersController {
 
   @Get(':id')
   @UseInterceptors(RemovePasswordInterceptor, RemoveStatusInterceptor)
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ValidateMongoIdPipe) id: string) {
     return this.usersService.findOne(id);
   }
 
   @Put(':id')
   @UseInterceptors(RemovePasswordInterceptor, RemoveStatusInterceptor)
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  update(
+    @Param('id', ValidateMongoIdPipe) id: string,
+    @Body() updateUserDto: PutUserDto,
+  ) {
     return this.usersService.update(id, updateUserDto);
   }
 
   @Patch(':id')
   @UseInterceptors(RemovePasswordInterceptor, RemoveStatusInterceptor)
-  patch(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.patch(id, updateUserDto);
+  patch(
+    @Param('id', ValidateMongoIdPipe) id: string,
+    @Body() updateUserDto: PatchUserDto,
+  ) {
+    return this.usersService.update(id, updateUserDto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseInterceptors(RemovePasswordInterceptor, RemoveStatusInterceptor)
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ValidateMongoIdPipe) id: string) {
     return this.usersService.remove(id);
   }
 }

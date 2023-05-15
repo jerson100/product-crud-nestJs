@@ -6,7 +6,8 @@ import {
   Matches,
   Equals,
 } from 'class-validator';
-export class CreateUserDto {
+
+export class PutUserDto {
   @Length(3, 50, {
     message:
       'Name must be at least 3 characters long and at most 50 characters long',

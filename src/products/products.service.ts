@@ -42,22 +42,32 @@ export class ProductsService {
     updateProductDto: PatchProductDto | PutProductDto,
   ): Promise<Product> {
     const existsProduct = await this.productModel.findOne({ _id: id });
-    if (!existsProduct)
+
+    if (!existsProduct) {
       throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
-    const existsProductName = await this.productModel.findOne({
-      name: updateProductDto.name,
-    });
-    if (existsProductName && existsProductName._id.toString() !== id) {
-      throw new HttpException(
-        'Product name already exists',
-        HttpStatus.BAD_REQUEST,
-      );
     }
+
+    if (updateProductDto.name) {
+      const existsProductName = await this.productModel.findOne({
+        name: updateProductDto.name,
+        _id: {
+          $ne: id,
+        },
+      });
+      if (existsProductName) {
+        throw new HttpException(
+          'Product name already exists',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
+
     const updatedProduct = await this.productModel.findByIdAndUpdate(
       { _id: id },
       { $set: updateProductDto },
       { new: true },
     );
+
     return updatedProduct;
   }
 
