@@ -60,6 +60,9 @@ export class UsersService {
     if (updateUserDto.email) {
       const emailUser = await this.userModel.findOne({
         email: updateUserDto.email,
+        _id: {
+          $ne: id,
+        },
         status: {
           $ne: UserStatus.DELETED,
         },
