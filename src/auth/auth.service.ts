@@ -1,26 +1,45 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { HttpException, Injectable, Inject } from '@nestjs/common';
+import { AuthSignin } from './dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { User } from 'src/users/schemas/user.schema';
+import { UserStatus } from 'src/users/user.consts';
+import { comparePassword } from 'src/utils/bycript.util';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
-  }
+  constructor(
+    private jwtService: JwtService,
+    @InjectModel('User') readonly userModel: Model<User>,
+  ) {}
 
-  findAll() {
-    return `This action returns all auth`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
-
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+  async signIn(auth: AuthSignin) {
+    const { email, password } = auth;
+    const p = await this.userModel.findOne({
+      email,
+      status: {
+        $ne: UserStatus.DELETED,
+      },
+    });
+    if (!p) throw new HttpException('Email or password incorrect', 401);
+    if (p.status !== UserStatus.ACTIVE) {
+      let msg =
+        p.status === UserStatus.LOCKED
+          ? 'The user account was locked, contact the administrator'
+          : 'Email or password incorrect';
+      throw new HttpException(msg, 401);
+    }
+    const isMatch = await comparePassword(password, p.password);
+    if (!isMatch) throw new HttpException('Email or password incorrect', 401);
+    const payload = {
+      id: p._id,
+      email: p.email,
+      role: p.role,
+      image: p.image,
+    };
+    return {
+      access_token: await this.jwtService.signAsync(payload),
+    };
   }
 }

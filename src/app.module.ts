@@ -19,7 +19,7 @@ import { AuthModule } from './auth/auth.module';
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
-        console.log(configService);
+        console.log(configService.get<string>('MONGO_URI'));
         return {
           uri: configService.get<string>('MONGO_URI'),
         };

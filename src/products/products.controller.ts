@@ -10,10 +10,12 @@ import {
   HttpCode,
   HttpStatus,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateProductDto, PatchProductDto, PutProductDto } from './dto';
 import { ProductsService } from './products.service';
 import { ValidateMongoIdPipe } from 'src/pipes';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 // import { Response } from 'express';
 
 @Controller('products')
@@ -22,6 +24,7 @@ export class ProductsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @UseGuards(JwtAuthGuard)
   create(@Body() createProductDto: CreateProductDto) {
     return this.productsService.create(createProductDto);
   }
@@ -44,6 +47,7 @@ export class ProductsController {
 
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
   update(
     @Param('id', ValidateMongoIdPipe) id: string,
     @Body() updateProductDto: PatchProductDto,
@@ -53,6 +57,7 @@ export class ProductsController {
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
   patchProduct(
     @Param('id', ValidateMongoIdPipe) id: string,
     @Body() updateProductDto: PutProductDto,
